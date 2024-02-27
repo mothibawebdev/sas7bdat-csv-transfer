@@ -6,6 +6,9 @@ library(foreign)
 library(htmltools)
 library(shinyWidgets)
 library(shinythemes)
+library(shinyalert)
+
+#install.packages("shinyalert")
 
 #install.packages(update=TRUE)
 
@@ -98,7 +101,11 @@ server <- function(input, output, session) {
     } else if (endsWith(file_path, ".txt")) {
       read.table(file_path, header=TRUE, sep=",")
     } else {
-      NULL
+      shinyalert(
+        title = "Failed!",
+        text = "Unsupported file format. Only .dta, .sas7bdat, and .txt files are allowed.",
+        type = "error"
+      )
     }
   }
   
@@ -137,29 +144,39 @@ server <- function(input, output, session) {
     }
   })
   
-  # Export selected data to CSV
-  # Export all data to CSV
   observeEvent(input$export_csv, {
     req(input$file)
     withProgress(message = 'Exporting Data...', value = 0, {
-      # Simulating a long process
+      # Iterate over each uploaded file
       for (i in 1:length(all_data())) {
         incProgress(1/length(all_data()))
-        Sys.sleep(0.2)
-        write.csv(all_data()[[i]], file = paste0(input$text, "_", i, ".csv"), row.names = FALSE)
+        
+        # Get the data and calculate the number of splits needed
+        data <- all_data()[[i]]
+        total_records <- nrow(data)
+        num_splits <- ceiling(total_records / 1000000)
+        
+        # Split the data into parts and export each part
+        for (j in 1:num_splits) {
+          start_index <- (j - 1) * 1000000 + 1
+          end_index <- min(j * 1000000, total_records)
+          part_data <- data[start_index:end_index, ]
+          
+          # Export the part data to a CSV file
+          write.csv(part_data, file = paste0(input$text, "_", i, "_part", j, ".csv"), row.names = FALSE)
+        }
       }
       
-      showModal(
-        modalDialog(
-          title="Success!",
-          "Files exported Successfully",
-          easyClose = TRUE
-        )
+      shinyalert(
+        title = "File export complete!",
+        text = "File(s) exported completed successfully",
+        type = "success"
       )
       # Clear the text input field after export
       updateTextInput(session, "text", value = "")
     })
   })
+  
   
 }
 
