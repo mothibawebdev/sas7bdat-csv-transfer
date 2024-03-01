@@ -40,15 +40,13 @@ ui <- fluidPage(theme = shinytheme("readable"),
   sidebarLayout(
     sidebarPanel(
       img(src = "logo2.png", height = 150, width = "100%"),
-      h4("CSV Converter Toolkit is a tool used for transfering datasets to a csv format. It accepts
+      h5("CSV Converter Toolkit is a tool used for transfering datasets to a csv format. It accepts
          files like sas, dta and txt files."),
       p(HTML("Step 1: Select data files to upload<br>
         Step 2: Provide table name<br>
         Step 3; click Export button<br>
         <strong>When uploading multiple files, provide a generic naming like tbl. It will then name your files tbl_1, tbl_2, etc. 
-             Do not put them in a zip folder</strong>")),
-      br(),
-      
+             </strong>"))
     ),
     mainPanel(
       fluidRow(
@@ -56,13 +54,12 @@ ui <- fluidPage(theme = shinytheme("readable"),
                wellPanel(
                  tags$fieldset(
                    tags$legend("Select Data Files"),
-                   fileInput("file", HTML("Allowed file formats include: <span class='badge badge-fix' style='background-color: blue'>sas</span>
-                                  <span class='badge badge-fix' style='background-color: maroon'>dta</span>
-                                  <span class='badge badge-fix' style='background-color: white; color: black'>txt</span>
-                                        <br><br>Data file(s): Max 5GB"), multiple=TRUE),
+                   fileInput("file", HTML("Allowed file formats include: <span class='badge badge-fix' style='background-color: blue; font-weight: bold;'>sas</span>
+                                  <span class='badge badge-fix' style='background-color: maroon; font-weight: bold;'>dta</span>
+                                  <span class='badge badge-fix' style='background-color: white; color: black; font-weight: bold;'>txt</span>
+                                       <br> Data file(s): Max 5GB"), multiple=TRUE),
                  textInput("text", h4("Table Name"), placeholder = "e.g tblBAS"),
-                 actionButton("export_csv", "Export", class="btn-success btn-sm btn-block"),
-                 br()
+                 actionButton("export_csv", "Export", class="btn-success btn-sm btn-block")
                  )
                  
                )
@@ -104,7 +101,8 @@ server <- function(input, output, session) {
       shinyalert(
         title = "Failed!",
         text = "Unsupported file format. Only .dta, .sas7bdat, and .txt files are allowed.",
-        type = "error"
+        type = "error",
+        closeOnEsc = TRUE
       )
     }
   }
@@ -170,7 +168,8 @@ server <- function(input, output, session) {
       shinyalert(
         title = "File export complete!",
         text = "File(s) exported completed successfully",
-        type = "success"
+        type = "success",
+        closeOnEsc = TRUE
       )
       # Clear the text input field after export
       updateTextInput(session, "text", value = "")
